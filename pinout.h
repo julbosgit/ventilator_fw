@@ -1,0 +1,1 @@
+#define CS_SPI_PSIG4 (15) /* placeholder for test */
