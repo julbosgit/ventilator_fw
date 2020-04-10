@@ -5,10 +5,15 @@
 #define SLAVE_ADDR 0x28
 #define OUTPUT_MIN 0x666        // 10%
 #define OUTPUT_MAX 0x399A       // 90% of 2^14 - 1
-#define PRESSURE_MIN 0.0        // min is 0 for sensors that give absolute values
-#define PRESSURE_MAX 206842.7   // 30psi (and we want results in pascals)
+// UPDATE FOR EACH SENSOR - 
+// SSCDRRN005ND2A5
+#define PRESSURE_MIN -5.0       // in H2O
+#define PRESSURE_MAX 5.0        // in H2O
+// M32JM-000105-100PG
+//#define PRESSURE_MIN 0       // psi
+//#define PRESSURE_MAX 100        // psi
 
-static const uint32_t task_interval_ms = 5000;
+static const uint32_t task_interval_ms = 2000;
 static uint32_t task_prev = 0; 
 
 
@@ -44,19 +49,14 @@ void example_task()
                 Serial.print("warn command mode ");
                 Serial.println(ps.status, BIN);
             }
-            Serial.print("status      ");
+            Serial.print("I2C status      ");
             Serial.println(ps.status, BIN);
-            Serial.print("bridge_data ");
-            Serial.println(ps.bridge_data, DEC);
-            Serial.print("temp_data   ");
-            Serial.println(ps.temperature_data, DEC);
-            Serial.println("");
             ps_convert(ps, &p, &t, OUTPUT_MIN, OUTPUT_MAX, PRESSURE_MIN,
                    PRESSURE_MAX);
-            Serial.print("pressure    (Pa) ");
-            Serial.println(p,2);
-            Serial.print("temperature (dC) ");
-            Serial.println(t,2);
+            Serial.print("I2C pressure    (in H2O) ");
+            Serial.println(p,4);
+            Serial.print("I2C temperature (degC) ");
+            Serial.println(t,4);
             Serial.println("");
         }
     }

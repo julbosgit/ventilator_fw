@@ -67,7 +67,7 @@ uint8_t ps_get_raw(const uint8_t slave_addr, struct cs_raw *raw)
     uint8_t i, val[4] = { 0, 0, 0, 0 };
     Wire.requestFrom(slave_addr, (uint8_t) 4);
     for (i = 0; i <= 3; i++) {				// \TODO JB: change delay to microsecond
-        delay(4);                        // sensor might be missing, do not block
+    //    delay(4);                        // sensor might be missing, do not block - JB: remove delay, data is already in buffer
         val[i] = Wire.read();            // by using Wire.available()
     }
     raw->status = (val[0] & 0xc0) >> 6;  // first 2 bits from first byte
