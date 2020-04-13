@@ -16,8 +16,7 @@ typedef struct {
 	const float pmax;
 	const uint16_t outmin;
 	const uint16_t outmax;
-	const psensor_port_t port;
-	const uint8_t addr; // Use chip select pin number for spi
+	const uint8_t extra_cmd;
 } psensor_t ;
 
 typedef struct {
@@ -27,14 +26,17 @@ typedef struct {
   	float pressure;
   	float temperature;
   	const psensor_t type;
+	  const psensor_port_t port;
+	  const uint8_t addr; // Use chip select pin number for spi
+   char name[10];
 } psensor_data_t;
 
 
-const psensor_t SENSOR_M3200 = { 0, 100, 1000, 15000, porti2c1, 0x28 };
-const psensor_t SENSOR_SSC = {-5, 5, 0x666, 0x399A, porti2c0, 0x28 }; // SSCDRRN005ND2A5
-const psensor_t SENSOR_HSC = {-2.3206, 2.3206, 1638, 14746, portspi, CS_SPI_PSIG4 };  
+const psensor_t SENSOR_M3200 = { 0, 100, 1000, 15000, 1 };
+const psensor_t SENSOR_SSC = {-5, 5, 0x666, 0x399A, 0 }; // SSCDRRN005ND2A5
+const psensor_t SENSOR_HSC = {-2.3206, 2.3206, 1638, 14746, 0 };  
 
-void ps_init(const psensor_t spisensor);
+void ps_init(const psensor_data_t spisensor);
 uint8_t ps_update_sensor(psensor_data_t *pdata);
 
 #endif

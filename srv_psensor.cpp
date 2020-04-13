@@ -4,6 +4,16 @@
 #include "srv_psensor.h"
 
 
+void PowerOnM3200()
+{
+	digitalWrite(POWER_M3200, HIGH);
+}
+
+void PowerOffM3200()
+{
+	digitalWrite(POWER_M3200, LOW);
+}
+
 
 /// returns
 ///         0 if all is fine
@@ -14,27 +24,40 @@
 uint8_t ps_update_sensor(psensor_data_t *pdata)
 {
     uint8_t i, val[4] = { 0, 0, 0, 0 };
-	
-	if(pdata->type.port == portspi)
+
+	if(pdata->port == portspi)
 	{
-		digitalWrite(pdata->type.addr, LOW);
+		digitalWrite(pdata->addr, LOW);
 		
 		for (i = 0; i <= 3; i++) {
 			val[i] = SPI.transfer(0x00);
 		}
 		
-		digitalWrite(pdata->type.addr, HIGH);
+		digitalWrite(pdata->addr, HIGH);
 	}
-	else if(pdata->type.port == porti2c0)
+	else if(pdata->port == porti2c0)
 	{
-		Wire.requestFrom(pdata->type.addr, (uint8_t) 4);
+		if(pdata->type.extra_cmd == 1)
+		{
+			Wire.requestFrom(pdata->addr, (uint8_t) 1); 
+			Wire.read(); 
+//			delay(3);
+		}
+		Wire.requestFrom(pdata->addr, (uint8_t) 4);
 		for (i = 0; i <= 3; i++) {				
 			val[i] = Wire.read();            // Wire.available()?
 		}
 	}
 	else
 	{
-		Wire1.requestFrom(pdata->type.addr, (uint8_t) 4);
+		if(pdata->type.extra_cmd == 1)
+		{
+			Wire1.requestFrom(pdata->addr, (uint8_t) 1); 
+			Wire1.read(); 
+//			delay(3);
+		}
+		
+		Wire1.requestFrom(pdata->addr, (uint8_t) 4);
 		for (i = 0; i <= 3; i++) {				
 			val[i] = Wire1.read();            // Wire.available()?
 		}
@@ -53,24 +76,19 @@ uint8_t ps_update_sensor(psensor_data_t *pdata)
 }
 
 // change to array of spi if needed
-void ps_init(const psensor_t spisensor)
+void ps_init(const psensor_data_t spisensor)
 {
     SPI.begin();
     SPI.beginTransaction(SPISettings(400000, MSBFIRST, SPI_MODE0));
+
 	pinMode(spisensor.addr, OUTPUT);
     digitalWrite(spisensor.addr, HIGH);
+
+	pinMode(POWER_M3200, OUTPUT);
+    digitalWrite(POWER_M3200, HIGH);
 	
 	Wire1.begin();
     Wire1.setClock(50000); // JB trying out different frequency for M3200 cause I have issues with it
 	
 	Wire.begin();
 }
-
-/*
-uint8_t ps_convert(psensor_data_t *pdata, const psensor_t sensor)
-{
-    pdata->pressure = 1.0 * (pdata->bridge_data - sensor.outmin) * (sensor.pmax - sensor.pmin) / (sensor.outmax - sensor.outmin) + sensor.pmin;
-    pdata->temperature = (pdata->temperature_data * 0.0977) - 50;
-    return 0;
-}
-*/

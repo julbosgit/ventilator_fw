@@ -1,17 +1,17 @@
 #include <Arduino.h>
-#include "example_task.h"
+#include "tsk_control.h"
 
 
 void setup()
 {
     delay(10);           
-    Serial.begin(9600);
+    Serial.begin(115200);
 
-    example_task_init();
+    tsk_control_init();
 }  // end of setup
 
 void loop()
 {
   // \todo JB tick time? 200us? Make sure it is in line with the way tasks compute their readiness
-    example_task();
+    tsk_control();
 }  // end of loop
