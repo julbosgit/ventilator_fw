@@ -21,6 +21,7 @@ void PowerOffM3200()
 ///         2 if old data is being read
 ///         3 if a diagnostic fault is triggered in the chip
 ///         4 if the sensor is not hooked up
+// \todo JB add controlled timeouts on comms
 uint8_t ps_update_sensor(psensor_data_t *pdata)
 {
     uint8_t i, val[4] = { 0, 0, 0, 0 };
@@ -84,6 +85,7 @@ void ps_init(const psensor_data_t spisensor)
 	pinMode(spisensor.addr, OUTPUT);
     digitalWrite(spisensor.addr, HIGH);
 
+	// \todo JB keep or tie to 3.3?
 	pinMode(POWER_M3200, OUTPUT);
     digitalWrite(POWER_M3200, HIGH);
 	

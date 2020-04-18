@@ -15,6 +15,7 @@ typedef enum {
 	EXHALE
 } state_t;
 
+
 typedef struct {
 	state_t state;
 	uint32_t max_duration; // in milliseconds
@@ -24,6 +25,7 @@ typedef struct {
 const systemstate_t IDLE_ST = {IDLE, 0xFFFFFFFF};
 const systemstate_t FILL_TANK_ST = {FILL_TANK, 400};
 const systemstate_t INHALE_ST = {INHALE, 1500};
-const systemstate_t EXHALE_ST = {EXHALE, 3000};
+const systemstate_t EXHALE_ST = {EXHALE, 2600}; 
+
 
 #endif

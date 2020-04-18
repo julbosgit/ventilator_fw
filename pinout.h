@@ -7,4 +7,7 @@
 #define TANK_SOV		(10)
 #define PATIENT_SOV	(3)
 #define OUT_SOV     (11)
+
+#define BPM_POT		(A0)
+
 #endif
