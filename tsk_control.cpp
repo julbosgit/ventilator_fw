@@ -1,10 +1,24 @@
+#ifndef _TEST_
 #include <Arduino.h>
+#else
+	#include "test_stubs.h"
+#endif
 #include "tsk_control.h"
 #include "srv_psensor.h"
 #include "srv_sov.h"
 #include "srv_pot.h"
 
-const systemstate_t *VENT_STATES[] = {&IDLE_ST, &FILL_TANK_ST, &INHALE_ST, &EXHALE_ST, NULL};
+// \todo JB review max durations for each of these 
+#define INHALE_12BPM	1500
+#define EXHALE_12BPM	3000
+static systemstate_t IDLE_ST = {IDLE, 0xFFFFFFFF};
+static systemstate_t FILL_TANK_ST = {FILL_TANK, 200}; // 200ms will fill to 6psi at 60psi input pressure to give 400cc tidal volume
+static systemstate_t FILL_ADJUST_ST = {FILL_ADJUST, 300}; // 300ms additionnal to reach 15psi to give 1000cc tidal volume
+static systemstate_t INHALE_ST = {INHALE, INHALE_12BPM}; // default is 12 bpm - 1.5s inhale / 3.5 exhale (500ms included in fill states)
+static systemstate_t EXHALE_ST = {EXHALE, EXHALE_12BPM}; 
+
+
+static systemstate_t *VENT_STATES[] = {&IDLE_ST, &FILL_TANK_ST, &FILL_ADJUST_ST, &INHALE_ST, &EXHALE_ST, NULL};
 const uint8_t FIRST_STATE_IDX = 1;
 
 // \todo JB update based on final architecture
@@ -15,7 +29,7 @@ static psensor_data_t systeminputsensor = { 0,0,0,0,0,SENSOR_M3200, porti2c0, 0x
 static psensor_data_t *sensors[] = {&systeminputsensor, &tanksensor, &patientsensor, NULL};
 
 
-static potentiometer_t bpm_input = {12, 30, BPM_POT, 0, 0}; 
+static potentiometer_t bpm_input = {12, 20, BPM_POT, 0, 0}; 
 
 static potentiometer_t *potentiometers[] = {&bpm_input, NULL};
 
@@ -26,11 +40,20 @@ static uint32_t task_prev = 0;
 static uint32_t curr_duration_in_state = FIRST_STATE_IDX;
 static uint8_t curr_state = 0;
 
-static float CFG_TANK_PRESSURE = 12.0;
+static float CFG_TANK_PRESSURE = 6.0;
 
 // 50 cmH2O - safety
 const float MAX_PATIENT_PRESSURE = 0.7112;
 
+
+void adjustBPM()
+{
+	if((bpm_input.min <= bpm_input.value) && (bpm_input.max >= bpm_input.value))
+	{
+		INHALE_ST.max_duration = INHALE_12BPM - ((bpm_input.value-bpm_input.min)*0.5 / 8)*1000; // 12 bpm - 1.5s // 20 bpm 1s
+		EXHALE_ST.max_duration = EXHALE_12BPM - ((bpm_input.value-bpm_input.min)*1.5 / 8)*1000;  // 12 bpm - 3.5s // 20 bpm 2s
+	}
+}
 
 
 void change_state()
@@ -49,6 +72,12 @@ void change_state()
 			sov_open(PATIENT_SOV);
 			break;
 		case FILL_TANK:
+			adjustBPM();
+			sov_close(PATIENT_SOV);
+			sov_open(OUT_SOV); 	
+			sov_open(TANK_SOV);
+			break;
+		case FILL_ADJUST:
 			sov_close(PATIENT_SOV);
 			sov_open(OUT_SOV); 	
 			sov_open(TANK_SOV);
@@ -133,6 +162,10 @@ void tsk_control()
 				case FILL_TANK:
 					if(tanksensor.pressure >= CFG_TANK_PRESSURE)
 						change_state();
+					break;
+				case FILL_ADJUST:
+					if(tanksensor.pressure >= CFG_TANK_PRESSURE)
+						sov_close(TANK_SOV);
 					break;
 				case INHALE:
 					// \todo JB alarm
