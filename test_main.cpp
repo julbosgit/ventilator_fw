@@ -1,3 +1,5 @@
+#ifdef _TEST_
+
 #include <stdint.h>
 #include "tsk_control.h"
 
@@ -13,3 +15,5 @@ int main()
 		tsk_control();
 	return 0;
 }
+
+#endif

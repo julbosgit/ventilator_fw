@@ -9,5 +9,6 @@
 #define OUT_SOV     (11)
 
 #define BPM_POT		(A0)
+#define TIDAL_POT	(A2)
 
 #endif

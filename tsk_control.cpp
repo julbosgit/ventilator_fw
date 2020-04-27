@@ -9,6 +9,7 @@
 #include "srv_pot.h"
 
 // \todo JB review max durations for each of these 
+#define DURATION_100CC	50
 #define INHALE_12BPM	1500
 #define EXHALE_12BPM	3000
 static systemstate_t IDLE_ST = {IDLE, 0xFFFFFFFF};
@@ -30,8 +31,9 @@ static psensor_data_t *sensors[] = {&systeminputsensor, &tanksensor, &patientsen
 
 
 static potentiometer_t bpm_input = {12, 20, BPM_POT, 0, 0}; 
+static potentiometer_t tidal_input = {0, 6, TIDAL_POT, 0, 0}; 
 
-static potentiometer_t *potentiometers[] = {&bpm_input, NULL};
+static potentiometer_t *potentiometers[] = {&bpm_input, &tidal_input, NULL};
 
 
 static const uint32_t task_interval_ms = TSK_CONTROL_PERIOD;
@@ -55,6 +57,14 @@ void adjustBPM()
 	}
 }
 
+void adjustTidalVolume()
+{
+	if((tidal_input.min <= tidal_input.value) && (tidal_input.max >= tidal_input.value))
+	{
+		FILL_ADJUST_ST.max_duration = DURATION_100CC * tidal_input.value;
+	}
+}
+
 
 void change_state()
 {
@@ -73,6 +83,7 @@ void change_state()
 			break;
 		case FILL_TANK:
 			adjustBPM();
+			adjustTidalVolume();
 			sov_close(PATIENT_SOV);
 			sov_open(OUT_SOV); 	
 			sov_open(TANK_SOV);
@@ -118,7 +129,6 @@ void tsk_control()
 	uint32_t elapsed = now - task_prev;
 
 	// \todo JB CHECK FOR SERIAL COMMS
-	// \todo JB remove delay of 3ms in I2C M3200
 //    if ((elapsed > task_interval_ms) && (Serial.available() <= 0))
 	if (elapsed > task_interval_ms)	
 	{

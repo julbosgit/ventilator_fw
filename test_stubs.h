@@ -1,3 +1,4 @@
+#ifdef _TEST_
 #ifndef STUBS_H
 #define STUBS_H
 
@@ -5,7 +6,8 @@
 
 #define NULL 0
 
-#define A0 0
+#define A0 	0
+#define A2	2
 
 #define static 
 
@@ -23,3 +25,4 @@ extern CSerial Serial;
 
 #endif
 
+#endif

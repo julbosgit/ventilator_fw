@@ -1,3 +1,5 @@
+#ifdef _TEST_
+
 #include <iostream>
 #include <iomanip>
 #include <stdint.h>
@@ -10,6 +12,9 @@ extern uint8_t curr_state;
 extern psensor_data_t tanksensor ;
 extern psensor_data_t patientsensor;
 extern psensor_data_t systeminputsensor;
+extern potentiometer_t bpm_input; 
+extern potentiometer_t tidal_input; 
+
 
 static uint32_t ticktime = 0;
 
@@ -65,8 +70,12 @@ uint8_t ps_update_sensor(psensor_data_t *p)
 }
 
 void pot_update_input(potentiometer_t *p)
+
 {
-	p->value = 17;
+	if(p == &bpm_input)
+		p->value = 17;
+	else if(p == &tidal_input)
+		p->value = 6;
 }
 
 void sov_open(uint8_t s)
@@ -100,3 +109,5 @@ CSerial::println()
 {
 	std::cout<<std::endl;
 }
+
+#endif

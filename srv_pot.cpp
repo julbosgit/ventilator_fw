@@ -4,7 +4,7 @@
 #include "srv_pot.h"
 
 
-
+// \todo JB check if this can hang in arduino lib
 void pot_update_input(potentiometer_t *pot)
 {
     analogReadResolution(12);
