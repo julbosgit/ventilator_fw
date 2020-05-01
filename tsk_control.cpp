@@ -62,6 +62,7 @@ void adjustTidalVolume()
 	if((tidal_input.min <= tidal_input.value) && (tidal_input.max >= tidal_input.value))
 	{
 		FILL_ADJUST_ST.max_duration = DURATION_100CC * tidal_input.value;
+    CFG_TANK_PRESSURE = 6.0 + tidal_input.value * 1.5;
 	}
 }
 
@@ -156,7 +157,7 @@ void tsk_control()
 			Serial.print(potentiometers[i]->value);
 		}
 
-		Serial.println();
+		Serial.print('\n');
 
 		curr_duration_in_state += elapsed;
 		
