@@ -93,4 +93,5 @@ void ps_init(const psensor_data_t spisensor)
     Wire1.setClock(50000); // JB trying out different frequency for M3200 cause I have issues with it
 	
 	Wire.begin();
+	Wire.setClock(50000); // LCD has speed limit
 }

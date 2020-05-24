@@ -7,8 +7,10 @@
 #include "srv_psensor.h"
 #include "srv_sov.h"
 #include "srv_pot.h"
+#include "srv_screen.h"
 
 // \todo JB review max durations for each of these 
+#define MIN_TIDAL		400
 #define DURATION_100CC	50
 #define INHALE_12BPM	1500
 #define EXHALE_12BPM	3000
@@ -30,11 +32,16 @@ static psensor_data_t systeminputsensor = { 0,0,0,0,0,SENSOR_M3200, porti2c0, 0x
 static psensor_data_t *sensors[] = {&systeminputsensor, &tanksensor, &patientsensor, NULL};
 
 
+
+// ***** INPUTS *******
 static potentiometer_t bpm_input = {12, 20, BPM_POT, 0, 0}; 
 static potentiometer_t tidal_input = {0, 6, TIDAL_POT, 0, 0}; 
 
 static potentiometer_t *potentiometers[] = {&bpm_input, &tidal_input, NULL};
+static uint16_t cfg_tidal_val;
+static uint8_t cfg_bpm_val;
 
+static char cfg_ie_ratio_val[] = "1/3\0";
 
 static const uint32_t task_interval_ms = TSK_CONTROL_PERIOD;
 static uint32_t task_prev = 0; 
@@ -44,8 +51,17 @@ static uint8_t curr_state = 0;
 
 static float CFG_TANK_PRESSURE = 6.0;
 
-// 50 cmH2O - safety
-const float MAX_PATIENT_PRESSURE = 0.7112;
+// \todo switch to input - 50 cmH2O - safety
+const uint8_t MAX_PATIENT_PRESSURE_CFG = 50;
+const float MAX_PATIENT_PRESSURE = MAX_PATIENT_PRESSURE_CFG/70.307;
+
+// ***** SCREEN PARAMETERS *******
+screen_param_t cfg_max_peak = {(uint16_t*)&MAX_PATIENT_PRESSURE_CFG,integer,0,0,2, integer};
+screen_param_t cfg_tidal = {(uint16_t*)&cfg_tidal_val,integer,0,3,4, integer};
+screen_param_t cfg_bpm = {(uint16_t*)&cfg_bpm_val,integer,0,8,2, integer};
+screen_param_t cfg_ie_ratio = {&cfg_ie_ratio_val,string,0,14,3,string};
+
+screen_param_t *screen_params[] = {&cfg_max_peak, &cfg_tidal, &cfg_bpm, &cfg_ie_ratio, NULL };
 
 
 void adjustBPM()
@@ -54,6 +70,7 @@ void adjustBPM()
 	{
 		INHALE_ST.max_duration = INHALE_12BPM - ((bpm_input.value-bpm_input.min)*0.5 / 8)*1000; // 12 bpm - 1.5s // 20 bpm 1s
 		EXHALE_ST.max_duration = EXHALE_12BPM - ((bpm_input.value-bpm_input.min)*1.5 / 8)*1000;  // 12 bpm - 3.5s // 20 bpm 2s
+		cfg_bpm_val = bpm_input.value;
 	}
 }
 
@@ -62,7 +79,19 @@ void adjustTidalVolume()
 	if((tidal_input.min <= tidal_input.value) && (tidal_input.max >= tidal_input.value))
 	{
 		FILL_ADJUST_ST.max_duration = DURATION_100CC * tidal_input.value;
-    CFG_TANK_PRESSURE = 6.0 + tidal_input.value * 1.5;
+		CFG_TANK_PRESSURE = 6.0 + tidal_input.value * 1.5;
+		cfg_tidal_val = MIN_TIDAL + tidal_input.value*100;
+	}
+}
+
+void updateScreen()
+{
+	uint8_t i = 0;
+	
+	while(screen_params[i] != NULL)
+	{
+		screen_update(screen_params[i]);
+		i++;
 	}
 }
 
@@ -103,6 +132,7 @@ void change_state()
 			sov_close(TANK_SOV);
 			sov_close(PATIENT_SOV);	
 			sov_open(OUT_SOV);  
+			updateScreen();
 			break;
 		default:
 			sov_close(TANK_SOV);
@@ -119,6 +149,7 @@ void tsk_control_init()
   ps_init(patientsensor);
   sov_init();
   pot_init();
+  screen_init(); // i2c must already been initialized before running this
   curr_state = FIRST_STATE_IDX;
   curr_duration_in_state = 0;
 }
