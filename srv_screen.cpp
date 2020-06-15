@@ -7,8 +7,9 @@ static LiquidCrystal_PCF8574 lcd(0x27);
 
 void screen_init()
 {
-  	lcd.setBacklight(255);
-    lcd.home();
+  lcd.begin(20, 4); // initialize the lcd
+ 	lcd.setBacklight(255);
+  lcd.home();
 	lcd.noCursor();
 	lcd.noBlink();
 }
@@ -30,11 +31,12 @@ void screen_update(screen_param_t *p)
 		case string: lcd.print(((char*)p->val)); break;
 		default: lcd.print("-");
 	}
-}
+
 
     // lcd.clear();
     // lcd.print("I will try");
 	// lcd.setCursor(0,1);
 	// lcd.print("at least LCD works");
 	// lcd.setCursor(0,2);
-	// lcd.print("I2C & Power on 3.3V");
+
+  }

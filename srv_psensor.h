@@ -35,7 +35,6 @@ typedef struct {
    char name[10];
 } psensor_data_t;
 
-
 const psensor_t SENSOR_M3200 = { 0, 100, 1000, 15000, 1 };
 const psensor_t SENSOR_SSC = {-5, 5, 0x666, 0x399A, 0 }; // SSCDRRN005ND2A5
 const psensor_t SENSOR_HSC = {-2.3206, 2.3206, 1638, 14746, 0 };  

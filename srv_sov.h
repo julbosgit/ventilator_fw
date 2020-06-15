@@ -11,6 +11,6 @@
 void sov_init();
 void sov_open(uint8_t id);
 void sov_close(uint8_t id);
-
+void sov_manage_booster();
 
 #endif

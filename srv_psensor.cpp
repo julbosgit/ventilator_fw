@@ -4,6 +4,7 @@
 #include "srv_psensor.h"
 
 
+
 void PowerOnM3200()
 {
 	digitalWrite(POWER_M3200, HIGH);
@@ -84,6 +85,7 @@ void ps_init(const psensor_data_t spisensor)
 
 	pinMode(spisensor.addr, OUTPUT);
     digitalWrite(spisensor.addr, HIGH);
+
 
 	// \todo JB keep or tie to 3.3?
 	pinMode(POWER_M3200, OUTPUT);
