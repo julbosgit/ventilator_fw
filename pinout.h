@@ -6,6 +6,7 @@
 #define LOW_AIRWAY_ALERT_POT    (A1) //DM
 #define TIDAL_POT (A2)
 #define HIGH_AIRWAY_ALERT_POT    (A3) //DM
+//#define PEEP_ALARM_HIGH   (A4)
 #define O2_PERCENT_POT    (A4) //DM
 
 //Flowmeters

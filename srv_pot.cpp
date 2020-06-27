@@ -17,3 +17,12 @@ void pot_init()
 {
 
 }
+
+//JS update pot min max
+void pot_update_cfg(potentiometer_t *pot,uint8_t min_val,uint8_t max_val){
+      pot->min=min_val;
+      pot->max=max_val;
+      pot_update_input(pot);
+  }
+
+  
